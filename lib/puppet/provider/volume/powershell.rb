@@ -1,5 +1,5 @@
 require 'json'
-Puppet::Type.type(:virtual_disk).provide(:powershell) do
+Puppet::Type.type(:volume).provide(:powershell) do
   confine :operatingsystem => :windows
   commands :powershell =>
               if File.exists?("#{ENV['SYSTEMROOT']}\\sysnative\\WindowsPowershell\\v1.0\\powershell.exe")
@@ -9,8 +9,6 @@ Puppet::Type.type(:virtual_disk).provide(:powershell) do
               else
                 'powershell.exe'
               end
-
-  mk_resource_methods
 
   def self.invoke_ps_command(command)
     result = powershell(
@@ -24,53 +22,24 @@ Puppet::Type.type(:virtual_disk).provide(:powershell) do
     Base64.strict_encode64(command.encode('utf-16le'))
   end
 
-  def self.instances
-    result = invoke_ps_command instances_command
-    result.each.collect do |line|
-      disk = JSON.parse(line.strip, symbolize_names: true)
-      disk[:ensure] = :present
-      new(disk)
-    end
-  end
-
-  def self.prefetch(resources)
-    instances.each do |prov|
-      if resource = resources[prov.name]
-        resource.provider = prov
-      end
-    end
-  end
-
   def exists?
-    @property_hash[:ensure] == :present
+    result = self.class.invoke_ps_command exists_command
+    result.first.strip.downcase == true.to_s
   end
 
   def create
     self.class.invoke_ps_command create_command
-    @property_hash[:ensure] = :present
   end
 
   def destroy
     self.class.invoke_ps_command destroy_command
-    @property_hash.clear
   end
 
-  def resiliency_setting_name=(value)
-    raise 'This property cannot be changed once a resource has been created'
-  end
-
-  def self.instances_command
+  def exists_command
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-$disks = @(Get-VirtualDisk)
-foreach ($disk in $disks) {
-  $hash = [ordered]@{
-    name = $disk.FriendlyName
-    resiliency_setting_name = $disk.ResiliencySettingName.ToLower()
-  }
-  $hash | ConvertTo-Json -Depth 99 -Compress
-}
+(Get-Volume -FileSystemLabel "#{@resource[:name]}" -ErrorAction SilentlyContinue) -ne $null
     COMMAND
   end
 
@@ -79,12 +48,15 @@ foreach ($disk in $disks) {
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
 $params = @{
-  FriendlyName = '#{@resource[:name]}'
-  StoragePoolFriendlyName = '#{@resource[:storage_pool_name]}'
-  ResiliencySettingName = '#{@resource[:resiliency_setting_name]}'
+  FriendlyName = "#{@resource[:name]}"
+  StoragePoolFriendlyName = "#{@resource[:storage_pool_friendly_name]}"
+  AllocationUnitSize = #{@resource[:allocation_unit_size]}
+  DriveLetter = "#{@resource[:drive_letter]}"
+  FileSystem = "#{@resource[:file_system]}"
+  ResiliencySettingName = "#{@resource[:resiliency_setting_name]}"
   UseMaximumSize = $#{@resource[:use_maximum_size]}
 }
-New-VirtualDisk @params
+New-Volume @params
     COMMAND
   end
 
@@ -92,7 +64,8 @@ New-VirtualDisk @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-Remove-VirtualDisk -FriendlyName '#{@resource[:name]}' -Confirm:$false
+Get-Volume -FileSystemLabel "#{@resource[:name]}" |
+  Get-Partition | Remove-Partition -Confirm:$false
     COMMAND
   end
 end

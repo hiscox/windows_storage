@@ -94,6 +94,8 @@ New-StoragePool @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
+Get-StoragePool -FriendlyName '#{@resource[:name]}' | Get-VirtualDisk |
+  Remove-VirtualDisk -Confirm:$false
 Remove-StoragePool -FriendlyName '#{@resource[:name]}' -Confirm:$false
     COMMAND
   end

@@ -1,0 +1,83 @@
+---
+driver:
+  name: azurerm
+ 
+driver_config:
+  subscription_id: '4ff5e849-7c41-41dc-9e70-027e16c6d86d'
+  location: 'North Europe'
+  machine_size: 'Standard_F2s'
+  storage_account_type: 'Premium_LRS'
+  boot_diagnostics_enabled: 'false'
+ 
+provisioner:
+  name: puppet_apply
+  manifests_path: spec/manifests
+  modules_path: .kitchen-modules
+  require_chef_for_busser: false
+  resolve_with_librarian_puppet: true
+  require_puppet_collections: true
+  puppet_whitelist_exit_code: [0]
+  puppet_detailed_exitcodes: true
+  retry_on_exit_code: [2]
+  wait_for_retry: 10
+  puppet_version: 'latest'
+  custom_post_apply_command: Install-PackageProvider Nuget -RequiredVersion 2.8.5.208 -Force; Install-Module Pester -Force -SkipPublisherCheck
+
+platforms:
+  - name: windows-2016-apply
+    driver_config:
+      image_urn: MicrosoftWindowsServer:WindowsServer:2016-Datacenter-Server-Core-smalldisk:latest
+      data_disks:
+      - lun: 0
+        disk_size_gb: 5
+      - lun: 1
+        disk_size_gb: 5
+      - lun: 3
+        disk_size_gb: 5
+      - lun: 4
+        disk_size_gb: 5
+      format_data_disks: false
+    transport:
+      name: winrm
+  - name: windows-2016-remove
+    driver_config:
+      image_urn: MicrosoftWindowsServer:WindowsServer:2016-Datacenter-Server-Core-smalldisk:latest
+      data_disks:
+      - lun: 0
+        disk_size_gb: 5
+      - lun: 1
+        disk_size_gb: 5
+      - lun: 3
+        disk_size_gb: 5
+      - lun: 4
+        disk_size_gb: 5
+      format_data_disks: false
+      winrm_powershell_script: |-
+        $cert = New-SelfSignedCertificate -DnsName $env:COMPUTERNAME -CertStoreLocation Cert:\\LocalMachine\\My
+        $config = '@{CertificateThumbprint="' + $cert.Thumbprint + '"}'
+        winrm create winrm/config/listener?Address=*+Transport=HTTPS $config
+        winrm set winrm/config/service/auth '@{Basic="true";Kerberos="false";Negotiate="true";Certificate="false";CredSSP="true"}'
+        New-NetFirewallRule -DisplayName "Windows Remote Management (HTTPS-In)" -Name "Windows Remote Management (HTTPS-In)" -Profile Any -LocalPort 5986 -Protocol TCP
+        winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+        New-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)" -Name "Windows Remote Management (HTTP-In)" -Profile Any -LocalPort 5985 -Protocol TCP
+        New-StoragePool -FriendlyName "test" -StorageSubSystemFriendlyName "Windows Storage*" -PhysicalDisks ((Get-PhysicalDisk) | ? {[int]$_.DeviceId -ge 2}) |
+        New-Volume -FriendlyName "test" -DriveLetter "q" -FileSystem "NTFS" -UseMaximumSize
+    transport:
+      name: winrm
+ 
+verifier:
+  name: pester
+  use_local_pester_module: true
+  test_folder: spec/acceptance
+ 
+suites:
+  - name: apply
+    provisioner:
+      manifest: apply.pp
+    excludes:
+    - windows-2016-remove
+  - name: remove
+    provisioner:
+      manifest: remove.pp
+    excludes:
+    - windows-2016-apply

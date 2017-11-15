@@ -1,0 +1,11 @@
+{
+  "name": "hiscox-windows_storage",
+  "version": "0.1.0",
+  "author": "hbuckle",
+  "summary": null,
+  "license": "Apache-2.0",
+  "source": "https://github.com/hiscox/windows_storage",
+  "project_page": "https://github.com/hiscox/windows_storage",
+  "issues_url": "https://github.com/hiscox/windows_storage/issues",
+  "dependencies": []
+}
