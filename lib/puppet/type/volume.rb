@@ -22,6 +22,9 @@ Puppet::Type.newtype(:volume) do
     newvalues('simple', 'mirror', 'parity')
   end
 
+  newparam(:number_of_columns) do
+  end
+
   newparam(:use_maximum_size, parent: Puppet::Parameter::Boolean) do
   end
 end

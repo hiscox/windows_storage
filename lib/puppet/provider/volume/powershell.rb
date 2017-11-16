@@ -52,8 +52,10 @@ $params = @{
   StoragePoolFriendlyName = "#{@resource[:storage_pool_friendly_name]}"
   AllocationUnitSize = #{@resource[:allocation_unit_size]}
   DriveLetter = "#{@resource[:drive_letter]}"
+  AccessPath = "#{@resource[:drive_letter]}"
   FileSystem = "#{@resource[:file_system]}"
   ResiliencySettingName = "#{@resource[:resiliency_setting_name]}"
+  NumberOfColumns = #{@resource[:number_of_columns]}
   UseMaximumSize = $#{@resource[:use_maximum_size]}
 }
 New-Volume @params
