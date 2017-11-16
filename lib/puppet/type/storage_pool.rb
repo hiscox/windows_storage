@@ -1,5 +1,4 @@
 Puppet::Type.newtype(:storage_pool) do
-
   ensurable
 
   newparam(:name) do
@@ -8,10 +7,6 @@ Puppet::Type.newtype(:storage_pool) do
   newparam(:storage_subsystem_name) do
   end
 
-  newproperty(:physical_disks, array_matching: :all) do
-    def insync?(is)
-      is.sort == should.sort
-    end
+  newparam(:physical_disks) do
   end
-
 end

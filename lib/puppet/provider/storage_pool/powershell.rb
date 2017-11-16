@@ -55,20 +55,14 @@ Puppet::Type.type(:storage_pool).provide(:powershell) do
     @property_hash.clear
   end
 
-  def physical_disks=(value)
-    raise 'This property cannot be changed once a resource has been created'
-  end
-
   def self.instances_command
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
 $pools = @(Get-StoragePool)
 foreach ($pool in $pools) {
-  $disks = @($pool | Get-PhysicalDisk)
   $hash = [ordered]@{
     name = $pool.FriendlyName
-    physical_disks = @($disks.DeviceId)
   }
   $hash | ConvertTo-Json -Depth 99 -Compress
 }
