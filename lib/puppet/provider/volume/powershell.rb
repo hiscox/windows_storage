@@ -51,7 +51,6 @@ $params = @{
   FriendlyName = "#{@resource[:name]}"
   StoragePoolFriendlyName = "#{@resource[:storage_pool_friendly_name]}"
   AllocationUnitSize = #{@resource[:allocation_unit_size]}
-  DriveLetter = "#{@resource[:drive_letter]}"
   AccessPath = "#{@resource[:drive_letter]}"
   FileSystem = "#{@resource[:file_system]}"
   ResiliencySettingName = "#{@resource[:resiliency_setting_name]}"
