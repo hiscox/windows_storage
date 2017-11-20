@@ -55,10 +55,6 @@ Puppet::Type.type(:virtual_disk).provide(:powershell) do
     @property_hash.clear
   end
 
-  def resiliency_setting_name=(value)
-    raise 'This property cannot be changed once a resource has been created'
-  end
-
   def self.instances_command
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
@@ -67,7 +63,6 @@ $disks = @(Get-VirtualDisk)
 foreach ($disk in $disks) {
   $hash = [ordered]@{
     name = $disk.FriendlyName
-    resiliency_setting_name = $disk.ResiliencySettingName.ToLower()
   }
   $hash | ConvertTo-Json -Depth 99 -Compress
 }
@@ -80,9 +75,11 @@ $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
 $params = @{
   FriendlyName = '#{@resource[:name]}'
-  StoragePoolFriendlyName = '#{@resource[:storage_pool_name]}'
+  StoragePoolFriendlyName = '#{@resource[:storage_pool_friendly_name]}'
   ResiliencySettingName = '#{@resource[:resiliency_setting_name]}'
   UseMaximumSize = $#{@resource[:use_maximum_size]}
+  Interleave = #{@resource[:interleave]}
+  NumberOfColumns = #{@resource[:number_of_columns]}
 }
 New-VirtualDisk @params
     COMMAND

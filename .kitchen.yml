@@ -21,7 +21,6 @@ provisioner:
   retry_on_exit_code: [2]
   wait_for_retry: 10
   puppet_version: 'latest'
-  custom_post_apply_command: Install-PackageProvider Nuget -RequiredVersion 2.8.5.208 -Force; Install-Module Pester -Force -SkipPublisherCheck
 
 platforms:
   - name: windows-2016-apply

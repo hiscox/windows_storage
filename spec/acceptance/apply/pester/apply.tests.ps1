@@ -5,6 +5,12 @@ Describe "windows_storage" {
       $pool | Should -Not -BeNullOrEmpty
     }
   }
+  Context "virtual_disk" {
+    It "creates a virtual disk" {
+      $disk = Get-VirtualDisk -FriendlyName "test" -ErrorAction SilentlyContinue
+      $disk | Should -Not -BeNullOrEmpty
+    }
+  }
   Context "volume" {
     It "creates a volume" {
       $volume = Get-Volume -FileSystemLabel "test" -ErrorAction SilentlyContinue

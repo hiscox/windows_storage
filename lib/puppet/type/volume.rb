@@ -5,7 +5,10 @@ Puppet::Type.newtype(:volume) do
   newparam(:name) do
   end
 
-  newparam(:storage_pool_friendly_name) do
+  newparam(:disk_friendly_name) do
+    validate do |value|
+      raise('disk_friendly_name must be specified') if value.nil?
+    end
   end
 
   newparam(:allocation_unit_size) do
@@ -16,15 +19,5 @@ Puppet::Type.newtype(:volume) do
   end
 
   newparam(:drive_letter) do
-  end
-
-  newparam(:resiliency_setting_name) do
-    newvalues('simple', 'mirror', 'parity')
-  end
-
-  newparam(:number_of_columns) do
-  end
-
-  newparam(:use_maximum_size, parent: Puppet::Parameter::Boolean) do
   end
 end

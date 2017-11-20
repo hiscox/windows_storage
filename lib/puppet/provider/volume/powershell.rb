@@ -39,7 +39,7 @@ Puppet::Type.type(:volume).provide(:powershell) do
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-(Get-Volume -FileSystemLabel "#{@resource[:name]}" -ErrorAction SilentlyContinue) -ne $null
+(Get-Volume -FileSystemLabel '#{@resource[:name]}' -ErrorAction SilentlyContinue) -ne $null
     COMMAND
   end
 
@@ -47,15 +47,13 @@ $ErrorActionPreference = 'Stop'
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
+$disk = Get-Disk -FriendlyName '#{@resource[:disk_friendly_name]}'
 $params = @{
-  FriendlyName = "#{@resource[:name]}"
-  StoragePoolFriendlyName = "#{@resource[:storage_pool_friendly_name]}"
+  FriendlyName = '#{@resource[:name]}'
+  Disk = $disk
   AllocationUnitSize = #{@resource[:allocation_unit_size]}
-  AccessPath = "#{@resource[:drive_letter]}:"
-  FileSystem = "#{@resource[:file_system]}"
-  ResiliencySettingName = "#{@resource[:resiliency_setting_name]}"
-  NumberOfColumns = #{@resource[:number_of_columns]}
-  UseMaximumSize = $#{@resource[:use_maximum_size]}
+  AccessPath = '#{@resource[:drive_letter]}:'
+  FileSystem = '#{@resource[:file_system]}'
 }
 New-Volume @params
     COMMAND
@@ -65,7 +63,7 @@ New-Volume @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-Get-Volume -FileSystemLabel "#{@resource[:name]}" |
+Get-Volume -FileSystemLabel '#{@resource[:name]}' |
   Get-Partition | Remove-Partition -Confirm:$false
     COMMAND
   end

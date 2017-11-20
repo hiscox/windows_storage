@@ -1,7 +1,11 @@
 volume { 'test':
   ensure => absent,
 }
-storage_pool { 'test':
+virtual_disk { 'test':
   ensure  => absent,
   require => Volume['test'],
+}
+storage_pool { 'test':
+  ensure  => absent,
+  require => Virtual_disk['test'],
 }
