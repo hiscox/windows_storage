@@ -1,4 +1,3 @@
-require 'puppet/parameter/boolean'
 Puppet::Type.newtype(:volume) do
   ensurable
 
