@@ -59,7 +59,7 @@ Puppet::Type.type(:storage_pool).provide(:powershell) do
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-$pools = @(Get-StoragePool)
+$pools = @(Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool)
 foreach ($pool in $pools) {
   $hash = [ordered]@{
     name = $pool.FriendlyName
@@ -74,7 +74,7 @@ foreach ($pool in $pools) {
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-$physicalDisks = Get-PhysicalDisk | where DeviceId -in #{physical_disks_string}
+$physicalDisks = Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-PhysicalDisk | where DeviceId -in #{physical_disks_string}
 $params = @{
   FriendlyName = '#{@resource[:name]}'
   StorageSubSystemFriendlyName = '#{@resource[:storage_subsystem_name]}'
@@ -88,9 +88,10 @@ New-StoragePool @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-Get-StoragePool -FriendlyName '#{@resource[:name]}' | Get-VirtualDisk |
-  Remove-VirtualDisk -Confirm:$false
-Remove-StoragePool -FriendlyName '#{@resource[:name]}' -Confirm:$false
+Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool -FriendlyName '#{@resource[:name]}' |
+  Get-VirtualDisk | Remove-VirtualDisk -Confirm:$false
+Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool -FriendlyName '#{@resource[:name]}' |
+  Remove-StoragePool -Confirm:$false
     COMMAND
   end
 end

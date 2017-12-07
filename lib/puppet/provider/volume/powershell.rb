@@ -39,7 +39,8 @@ Puppet::Type.type(:volume).provide(:powershell) do
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-(Get-Volume -FileSystemLabel '#{@resource[:name]}' -ErrorAction SilentlyContinue) -ne $null
+(Get-StorageNode | where Name -Match $env:COMPUTERNAME |
+  Get-Volume -FileSystemLabel '#{@resource[:name]}' -ErrorAction SilentlyContinue) -ne $null
     COMMAND
   end
 
@@ -47,7 +48,7 @@ $ErrorActionPreference = 'Stop'
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-$disk = Get-Disk -FriendlyName '#{@resource[:disk_friendly_name]}'
+$disk = Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-Disk -FriendlyName '#{@resource[:disk_friendly_name]}'
 $params = @{
   FriendlyName = '#{@resource[:name]}'
   Disk = $disk
@@ -63,7 +64,7 @@ New-Volume @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-Get-Volume -FileSystemLabel '#{@resource[:name]}' |
+Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-Volume -FileSystemLabel '#{@resource[:name]}' |
   Get-Partition | Remove-Partition -Confirm:$false
     COMMAND
   end

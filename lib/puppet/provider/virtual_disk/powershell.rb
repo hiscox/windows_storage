@@ -59,7 +59,7 @@ Puppet::Type.type(:virtual_disk).provide(:powershell) do
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-$disks = @(Get-VirtualDisk)
+$disks = @(Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-VirtualDisk)
 foreach ($disk in $disks) {
   $hash = [ordered]@{
     name = $disk.FriendlyName
@@ -89,7 +89,8 @@ New-VirtualDisk @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-Remove-VirtualDisk -FriendlyName '#{@resource[:name]}' -Confirm:$false
+Get-StorageNode | where Name -Match $env:COMPUTERNAME |
+  Get-VirtualDisk -FriendlyName '#{@resource[:name]}' | Remove-VirtualDisk -Confirm:$false
     COMMAND
   end
 end
