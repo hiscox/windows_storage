@@ -88,9 +88,9 @@ New-StoragePool @params
     <<-COMMAND
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
-Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool -FriendlyName '#{@resource[:name]}' |
+Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool | where FriendlyName -Eq '#{@resource[:name]}' |
   Get-VirtualDisk | Remove-VirtualDisk -Confirm:$false
-Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool -FriendlyName '#{@resource[:name]}' |
+Get-StorageNode | where Name -Match $env:COMPUTERNAME | Get-StoragePool | where FriendlyName -Eq '#{@resource[:name]}' |
   Remove-StoragePool -Confirm:$false
     COMMAND
   end

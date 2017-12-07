@@ -90,7 +90,7 @@ New-VirtualDisk @params
 $ProgressPreference = 'SilentlyContinue'
 $ErrorActionPreference = 'Stop'
 Get-StorageNode | where Name -Match $env:COMPUTERNAME |
-  Get-VirtualDisk -FriendlyName '#{@resource[:name]}' | Remove-VirtualDisk -Confirm:$false
+  Get-VirtualDisk | where FriendlyName -Eq '#{@resource[:name]}' | Remove-VirtualDisk -Confirm:$false
     COMMAND
   end
 end
