@@ -13,7 +13,7 @@ Puppet::Type.type(:volume).provide(:powershell) do
   def self.invoke_ps_command(command)
     result = powershell(
       ['-noprofile', '-noninteractive', '-executionpolicy',
-       'bypass', '-encodedcommand', encoded_command(command)]
+       'bypass', '-command', command]
     )
     result.lines
   end
